@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Start",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/index.ts"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "env": {
+        "COV_STATUS_URL": "http://cov.dell.r57/status_read",
+        "MQTT_URI": "mqtt://dell.r57",
+        "MQTT_TOPIC": "cov",
+        "TICK_INTERVAL_SECONDS": "10",
+      }
+    }
+  ]
+}
