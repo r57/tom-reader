@@ -90,11 +90,11 @@ const tick = async () => {
     console.log("Publishing message:", data);
 
     await client.publishAsync(MQTT_TOPIC, JSON.stringify(data));
-
-    console.log(`Scheduling next tick in ${TICK_INTERVAL_SECONDS} seconds`);
-    setTimeout(() => tick(), TICK_INTERVAL_SECONDS * 1000);
   } catch (error) {
     console.error("Error during tick!");
     console.error(error);
   }
+
+  console.log(`Scheduling next tick in ${TICK_INTERVAL_SECONDS} seconds`);
+  setTimeout(() => tick(), TICK_INTERVAL_SECONDS * 1000);
 };
