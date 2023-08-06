@@ -91,8 +91,7 @@ const tick = async () => {
 
     await client.publishAsync(MQTT_TOPIC, JSON.stringify(data));
   } catch (error) {
-    console.error("Error during tick!");
-    console.error(error);
+    console.error("Error:", (error as Error).message);
   }
 
   console.log(`Scheduling next tick in ${TICK_INTERVAL_SECONDS} seconds`);
