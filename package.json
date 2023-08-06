@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsc -p .",
     "start": "ts-node src/index.ts",
-    "image": "docker build . -t \"dell.r57:32000/tom-reader:$(cat package.json | jq -r '.version')\"",
-    "push": "docker push \"dell.r57:32000/tom-reader:$(cat package.json | jq -r '.version')\""
+    "image": "docker build . -t \"${DOCKER_REPO}/tom-reader:$(node version.js)\"",
+    "push": "docker push \"${DOCKER_REPO}/tom-reader:$(node version.js)\""
   }
 }

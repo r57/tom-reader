@@ -1,20 +1,34 @@
 import { Phases, Registers, compressQueries, queryRegister } from "./tom";
 import * as mqtt from "mqtt";
 
+const usage = (message: string | null) => {
+  if (message) console.error(message);
+  console.log(
+    "Please provide all ENV variables: \n" +
+      "COV_STATUS_URL - URL of Tom unit /status_read endpoint (example: http://www.topol.tom/status_read) \n" +
+      "MQTT_URI - MQTT topic to publish messages to \n" +
+      "MQTT_URI - Uri of MQTT broker \n" +
+      "TICK_INTERVAL_SECONDS - how often to read & push TOM data"
+  );
+};
+
 const COV_STATUS_URL =
   process.env["COV_STATUS_URL"] ||
-  (console.error("Missing COV_STATUS_URL env value"), process.exit(-1));
+  (usage("Missing COV_STATUS_URL env value"), process.exit(-1));
 const MQTT_URI =
   process.env["MQTT_URI"] ||
-  (console.error("Missing MQTT_URI env value"), process.exit(-1));
+  (usage("Missing MQTT_URI env value"), process.exit(-1));
 const MQTT_TOPIC =
   process.env["MQTT_TOPIC"] ||
-  (console.error("Missing MQTT_TOPIC env value"), process.exit(-1));
+  (usage("Missing MQTT_TOPIC env value"), process.exit(-1));
 const TICK_INTERVAL_SECONDS = parseInt(
   process.env["TICK_INTERVAL_SECONDS"] ||
-    (console.error("Missing TICK_INTERVAL_SECONDS env value"), process.exit(-1))
+    (usage("Missing TICK_INTERVAL_SECONDS env value"), process.exit(-1))
 );
 
+/**
+ * Structure of MQTT message
+ */
 interface MqttMessage {
   phase: string;
   accumulator_level: number;
@@ -33,7 +47,7 @@ client.on("connect", () => {
 });
 
 client.on("error", (error) => {
-  console.warn("MQTT error, exiting...", error);
+  console.error("MQTT error, exiting...", error);
   process.exit(-1);
 });
 
@@ -64,14 +78,14 @@ const tick = async () => {
 
     console.log("Got register values:", registerValues);
 
-    const getValue: (register_1: Registers, orElse: number) => number = (
-      register_2,
-      orElse_1
+    const getValue: (register: Registers, orElse: number) => number = (
+      register,
+      orElse
     ) => {
       const maybeValue = registerValues.find(
-        (v) => v.register == register_2
+        (v) => v.register == register
       )?.value;
-      return maybeValue === undefined ? orElse_1 : maybeValue;
+      return maybeValue === undefined ? orElse : maybeValue;
     };
 
     const data: MqttMessage = {
@@ -91,7 +105,7 @@ const tick = async () => {
 
     await client.publishAsync(MQTT_TOPIC, JSON.stringify(data));
   } catch (error) {
-    console.error("Error:", (error as Error).message);
+    console.error("Tick error:", (error as Error).message);
   }
 
   console.log(`Scheduling next tick in ${TICK_INTERVAL_SECONDS} seconds`);

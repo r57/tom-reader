@@ -1,15 +1,19 @@
 # Tom Reader
 
-## Push to dell
+Read Topolwater Topas TOM control unit data & push to MQTT.
 
-1. Bump version in `package.json`
+> NOTE: this code assume direct HTTP connectivity to TOM unit
 
-2. Build docker container
+## Docker
+
+1. Bump version in `package.json` if needed
+
+2. Build docker container (provide `DOCKER_REPO` ENV variable)
     ```
-    $ yarn image
+    $ DOCKER_REPO=myrepo.example.com yarn image
     ```
 
-3. Push to dell
+3. Push to DOCKER_REPO
     ```
-    $ yarn push
+    $ DOCKER_REPO=myrepo.example.com yarn push
     ```
