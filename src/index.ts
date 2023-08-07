@@ -78,26 +78,27 @@ const tick = async () => {
 
     console.log("Got register values:", registerValues);
 
-    const getValue: (register: Registers, orElse: number) => number = (
-      register,
-      orElse
+    const getValue: (register: Registers) => number = (
+      register
     ) => {
       const maybeValue = registerValues.find(
         (v) => v.register == register
       )?.value;
-      return maybeValue === undefined ? orElse : maybeValue;
+
+      if (maybeValue === undefined) throw new Error(`Value for register ${register} not returned!`);
+      else return maybeValue;
     };
 
     const data: MqttMessage = {
-      phase: Phases[getValue(Registers.Phase, -1)],
-      accumulator_level: getValue(Registers.AccumulatorLevel, 0),
-      reactor_level: getValue(Registers.ReactorLevel, 0),
-      blower_power: getValue(Registers.BlowerPower, 0) / 10,
-      clean_water_today: getValue(Registers.CleanWaterToday, 0) / 100,
+      phase: Phases[getValue(Registers.Phase)],
+      accumulator_level: getValue(Registers.AccumulatorLevel),
+      reactor_level: getValue(Registers.ReactorLevel),
+      blower_power: getValue(Registers.BlowerPower) / 10,
+      clean_water_today: getValue(Registers.CleanWaterToday) / 100,
       is_error:
-        getValue(Registers.Error1, 0) +
-          getValue(Registers.Error2, 0) +
-          getValue(Registers.Error3, 0) >
+        getValue(Registers.Error1) +
+          getValue(Registers.Error2) +
+          getValue(Registers.Error3) >
         0,
     };
 

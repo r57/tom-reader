@@ -54,6 +54,10 @@ export const queryRegister = async (url: string, start: number, length: number):
     data: `t=${new Date().toString()}&l=${length}&p=1&i=${start}&d=0`,
   });
 
+  if(response.status !== 200) {
+    throw new Error(`TOM responded with HTTP ${response.status}: ${response.data}`);
+  }
+
   return registerHexParse(response.data);
 };
 
