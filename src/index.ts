@@ -31,6 +31,7 @@ const TICK_INTERVAL_SECONDS = parseInt(
  */
 interface MqttMessage {
   phase: string;
+  phase_number: number;
   accumulator_level: number;
   reactor_level: number;
   blower_power: number;
@@ -91,6 +92,7 @@ const tick = async () => {
 
     const data: MqttMessage = {
       phase: Phases[getValue(Registers.Phase)],
+      phase_number: getValue(Registers.Phase),
       accumulator_level: getValue(Registers.AccumulatorLevel),
       reactor_level: getValue(Registers.ReactorLevel),
       blower_power: getValue(Registers.BlowerPower) / 10,
