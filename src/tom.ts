@@ -22,9 +22,32 @@ export enum Registers {
 
   CleanWaterToday = 11024,
 
-  Error1 = 11047,
-  Error2 = 11048,
-  Error3 = 11049,
+  ErrorWarn = 11047,
+  ErrorFail = 11048,
+  ErrorCrash = 11049,
+}
+
+export enum Errors {
+  NO_ERROR = 0,
+  POWER_FAILURE = 1,
+  RESTORING_POWER = 2,
+  LICENSE_VIOLATION = 3,
+  EMERGENCY_ACCUMULATION_LEVEL = 101,
+  PRESSURE_DROP = 102,
+  CLEAN_WATER_PUMPING_FAILURE = 103,
+  FAILURE_PUMPING_RAW_WATER = 104,
+  OVERLOAD = 105,
+  DEFECT_IN_BLOWDOWN_IN_DENITRIFICATION = 106,
+  SLUDGE_WARNING = 107,
+  EMERGENCY_ACTIVATION_LEVEL = 108,
+  LONG_TERM_OVERLOAD = 109,
+  ACCUMULATION_PRESSURE_DROP = 110,
+  REACTOR_PRESSURE_DROP = 111,
+  EMPTY_CHEMICAL_CONTAINER_1 = 130,
+  LOW_LEVEL_OF_CHEMICAL_TANK_1 = 131,
+  EMPTY_CHEMICAL_CONTAINER_2 = 132,
+  LOW_LEVEL_OF_CHEMICAL_TANK_2 = 133,
+  HIGH_TEMPERATURE = 150,
 }
 
 export const compressQueries = (registers: Registers[]) => {
@@ -75,4 +98,29 @@ export const registerHexParse = (response: string) => {
         e.push(h);
     }
   return e;
+}
+
+export const getRegisterError = (register: Registers, value: number) => {
+  if(register == Registers.ErrorWarn && (1 & value) > 0 ) return Errors.SLUDGE_WARNING;
+  if(register == Registers.ErrorWarn && (2 & value) > 0 ) return Errors.EMERGENCY_ACTIVATION_LEVEL;
+  if(register == Registers.ErrorWarn && (4 & value) > 0 ) return Errors.LOW_LEVEL_OF_CHEMICAL_TANK_1;
+  if(register == Registers.ErrorWarn && (8 & value) > 0 ) return Errors.LOW_LEVEL_OF_CHEMICAL_TANK_2;
+
+  if(register == Registers.ErrorFail && (1 & value) > 0 ) return Errors.FAILURE_PUMPING_RAW_WATER;
+  if(register == Registers.ErrorFail && (2 & value) > 0 ) return Errors.OVERLOAD;
+  if(register == Registers.ErrorFail && (4 & value) > 0 ) return Errors.DEFECT_IN_BLOWDOWN_IN_DENITRIFICATION;
+  if(register == Registers.ErrorFail && (8 & value) > 0 ) return Errors.EMPTY_CHEMICAL_CONTAINER_1;
+  if(register == Registers.ErrorFail && (16 & value) > 0 ) return Errors.EMPTY_CHEMICAL_CONTAINER_2;
+  if(register == Registers.ErrorFail && (64 & value) > 0 ) return Errors.ACCUMULATION_PRESSURE_DROP;
+  if(register == Registers.ErrorFail && (128 & value) > 0 ) return Errors.REACTOR_PRESSURE_DROP;
+  if(register == Registers.ErrorFail && (256 & value) > 0 ) return Errors.HIGH_TEMPERATURE;
+
+  if(register == Registers.ErrorCrash && (1 & value) > 0 ) return Errors.EMERGENCY_ACCUMULATION_LEVEL;
+  if(register == Registers.ErrorCrash && (2 & value) > 0 ) return Errors.PRESSURE_DROP;
+  if(register == Registers.ErrorCrash && (4 & value) > 0 ) return Errors.CLEAN_WATER_PUMPING_FAILURE;
+  if(register == Registers.ErrorCrash && (8192 & value) > 0 ) return Errors.LICENSE_VIOLATION;
+  if(register == Registers.ErrorCrash && (16384 & value) > 0 ) return Errors.RESTORING_POWER;
+  if(register == Registers.ErrorCrash && (32768 & value) > 0 ) return Errors.POWER_FAILURE;
+  
+  return Errors.NO_ERROR;
 }

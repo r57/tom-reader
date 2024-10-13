@@ -1,4 +1,4 @@
-import { Phases, Registers, compressQueries, queryRegister } from "./tom";
+import { Errors, Phases, Registers, compressQueries, getRegisterError, queryRegister } from "./tom";
 import * as mqtt from "mqtt";
 
 const usage = (message: string | null) => {
@@ -6,7 +6,7 @@ const usage = (message: string | null) => {
   console.log(
     "Please provide all ENV variables: \n" +
       "COV_STATUS_URL - URL of Tom unit /status_read endpoint (example: http://www.topol.tom/status_read) \n" +
-      "MQTT_URI - MQTT topic to publish messages to \n" +
+      "MQTT_TOPIC - MQTT topic to publish messages to \n" +
       "MQTT_URI - Uri of MQTT broker \n" +
       "TICK_INTERVAL_SECONDS - how often to read & push TOM data"
   );
@@ -37,6 +37,8 @@ interface MqttMessage {
   blower_power: number;
   clean_water_today: number;
   is_error: boolean;
+  errorNo: number;
+  errorStr: string;
 }
 
 console.log("Connecting MQTT at ", MQTT_URI);
@@ -61,9 +63,9 @@ const tick = async () => {
     Registers.BlowerPower,
     Registers.Phase,
     Registers.CleanWaterToday,
-    Registers.Error1,
-    Registers.Error2,
-    Registers.Error3,
+    Registers.ErrorWarn,
+    Registers.ErrorFail,
+    Registers.ErrorCrash,
   ];
 
   console.log("Querying registers", registersToQuery);
@@ -90,6 +92,10 @@ const tick = async () => {
       else return maybeValue;
     };
 
+    const error = getRegisterError(Registers.ErrorCrash, getValue(Registers.ErrorCrash)) || 
+      getRegisterError(Registers.ErrorFail, getValue(Registers.ErrorFail)) || 
+      getRegisterError(Registers.ErrorWarn, getValue(Registers.ErrorWarn));
+
     const data: MqttMessage = {
       phase: Phases[getValue(Registers.Phase)],
       phase_number: getValue(Registers.Phase),
@@ -97,11 +103,9 @@ const tick = async () => {
       reactor_level: getValue(Registers.ReactorLevel),
       blower_power: getValue(Registers.BlowerPower) / 10,
       clean_water_today: getValue(Registers.CleanWaterToday) / 100,
-      is_error:
-        getValue(Registers.Error1) +
-          getValue(Registers.Error2) +
-          getValue(Registers.Error3) >
-        0,
+      is_error: error != Errors.NO_ERROR,
+      errorNo: error,
+      errorStr: Errors[error]
     };
 
     console.log("Publishing message:", data);
